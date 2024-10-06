@@ -1,10 +1,9 @@
 "use client";
 import Image from "next/image";
 import React from "react";
-import { Button } from "./ui/button";
 import { usePetContext } from "@/lib/hooks";
-import { PetItemProps } from "@/lib/types";
 import { PetButton } from "./pet-button";
+import { Pet } from "@prisma/client";
 
 export default function PetDetails() {
   const { selectedPet } = usePetContext();
@@ -15,10 +14,14 @@ export default function PetDetails() {
         <EmptyView />
       ) : (
         <>
-          <HeaderSection imageUrl={selectedPet.imageUrl} name={selectedPet.name} />
+          <HeaderSection
+            imageUrl={selectedPet.imageUrl}
+            name={selectedPet.name}
+            id={selectedPet.id}
+          />
           <div className="grid grid-cols-2 h-[130px]">
             <Card label="Owner Name" value={selectedPet.ownerName} />
-            <Card label="Age" value={selectedPet.age} />
+            <Card label="Age" value={selectedPet.age.toString()} />
           </div>
           <NotesSection notes={selectedPet.notes} />
         </>
@@ -42,7 +45,8 @@ export function EmptyView() {
   );
 }
 
-function HeaderSection({ imageUrl, name }: Pick<PetItemProps, "imageUrl" | "name">) {
+function HeaderSection({ imageUrl, name, id }: Pick<Pet, "imageUrl" | "name" | "id">) {
+  const { handleCheckoutPet } = usePetContext();
   return (
     <section className="flex justify-between gap-x-4 h-[118px] bg-white border-b border-light items-center px-6 ">
       <Image
@@ -55,7 +59,13 @@ function HeaderSection({ imageUrl, name }: Pick<PetItemProps, "imageUrl" | "name
       <h2 className="text-3xl font-bold">{name}</h2>
       <div className="space-x-2 ml-auto">
         <PetButton actionType="edit">Edit</PetButton>
-        <PetButton actionType="chechout">Checkout</PetButton>
+        <PetButton
+          actionType="checkout"
+          onClick={async () => {
+            await handleCheckoutPet(id);
+          }}>
+          Checkout
+        </PetButton>
       </div>
     </section>
   );
@@ -70,7 +80,7 @@ function Card({ label, value }: CardProps) {
   );
 }
 
-function NotesSection({ notes }: Pick<PetItemProps, "notes">) {
+function NotesSection({ notes }: Pick<Pet, "notes">) {
   return (
     <section className="flex-1 mb-8 mx-8">
       <div className="bg-white h-full  rounded-md border border-light py-4 px-6">

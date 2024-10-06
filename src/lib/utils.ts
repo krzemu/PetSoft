@@ -1,19 +1,23 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { PetItemProps } from "./types";
+import prisma from "./db";
+import { Pet } from "@prisma/client";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-
+export function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
 
 
 // Fetch
 
-export async function getPetList(): Promise<PetItemProps[]> {
-  const res = await fetch('https://bytegrad.com/course-assets/projects/petsoft/api/pets');
-  if (!res.ok) throw new Error('Could not fetch pets');
-  const petList = await res.json();
+export async function getPetList(): Promise<Pet[]> {
+  const petList = await prisma.pet.findMany();
   return petList;
 }
+
+
+
